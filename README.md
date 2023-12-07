@@ -1,7 +1,7 @@
 Steps to run:-
 a) Go inside the root folder.
 b) Build the image by using
-    docker-compose up build
+    docker-compose up --build
 
-c) Then Run using
+c) Then Re-Run using
     docker-compose up

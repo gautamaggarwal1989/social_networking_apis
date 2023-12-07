@@ -1,9 +1,7 @@
 version: '3'
 services:
-    web:
+    backend:
         build: .
         container_name: social_networking_backend
-        volumes:
-            - ./project_dir:/drf
         ports:
             - "8000:8000"
