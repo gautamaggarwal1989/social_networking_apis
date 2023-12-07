@@ -1,15 +1,17 @@
-FROM python:3.5.7
+FROM python:3.11.7-slim-bullseye
 
 ENV PYTHONUNBUFFERED 1
 
-WORKDIR /project_dir
+WORKDIR /app
 
-RUN ls .
+COPY requirements.txt /app/
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt
 
-RUN pip install -r requirements.txt
+COPY . /app/
 
-VOLUME /project_dir
+EXPOSE 8000
 
-EXPOSE 8080
-
-CMD python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8000
+CMD python manage.py makemigrations && \
+    python manage.py migrate && \
+    python manage.py runserver 0.0.0.0:8000
