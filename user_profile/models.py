@@ -52,11 +52,11 @@ class User(AbstractBaseUser):
         return requests_received
     
     @classmethod
-    def search(cls, search_keyword, offset, limit):
+    def search(cls, search_keyword):
         # If search keyword is an email, than exact matching.
         if '@' in search_keyword:
             return cls.objects.filter(
-                email=search_keyword)[offset:limit]
+                email=search_keyword)
         
         return cls.objects.filter(
-            first_name__icontains=search_keyword)[offset:limit]
+            first_name__icontains=search_keyword)

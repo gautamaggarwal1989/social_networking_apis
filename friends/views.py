@@ -14,6 +14,7 @@ from .serializers import (
     FriendshipUpdateSerializer
 )
 from user_profile.serializers import SignUpSerializer, SearchUserSerializer
+from .pagination import PaginationClass
 
 User = get_user_model()
 
@@ -76,6 +77,7 @@ class RespondFriendRequestView(generics.UpdateAPIView):
 
 class ListFriendsView(generics.ListAPIView):
     serializer_class = SignUpSerializer
+    pagination_class = PaginationClass
 
     def get_queryset(self):
         return self.request.user.connections.all()
@@ -83,6 +85,7 @@ class ListFriendsView(generics.ListAPIView):
 
 class ListPendingRequestsView(generics.ListAPIView):
     serializer_class = FriendshipDetailsSerializer
+    pagination_class = PaginationClass
 
     def get_queryset(self):
         return self.request.user.pending_requests.all()
@@ -90,25 +93,25 @@ class ListPendingRequestsView(generics.ListAPIView):
 
 class UserSearchAPIView(generics.ListAPIView):
     serializer_class = SearchUserSerializer
-    OFFSET = 10
-    FIRST_PAGE = 1
+    pagination_class = PaginationClass
 
-    def list(self, request):
-        search_keyword = request.query_params.get(
+    def get_queryset(self):
+        search_keyword = self.request.query_params.get(
             'search_keyword', None)
         if not search_keyword or not len(search_keyword):
-            return Response(
-                {"error": "Please provide search keyword"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return User.objects.none()
         
-        page_number = int(request.query_params.get(
-            'page_number', self.FIRST_PAGE))
+        return User.search(search_keyword)
+         
 
-        offset = page_number - 1
-        limit = int(request.query_params.get('limit', self.OFFSET))
+    def list(self, request):
+        queryset = self.get_queryset()
+        page = self.paginate_queryset(queryset)
+
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
         
-        search_result = User.search(search_keyword, offset, limit)
-        serializer = self.get_serializer(search_result, many=True)
+        serializer = self.get_serializerI(queryset, many=True)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
